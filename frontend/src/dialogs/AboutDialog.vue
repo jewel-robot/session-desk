@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { ArrowUpRight, CircleAlert, CircleCheck, Download, FolderOpen, LoaderCircle, RefreshCw, ScrollText, Sparkles, X } from 'lucide-vue-next'
+import { ArrowUpRight, CircleAlert, CircleCheck, Download, FolderOpen, LoaderCircle, RefreshCw, ScrollText, Sparkles, X } from '@lucide/vue'
 import { dialogs, notify } from '../store'
 import { appInfo, checkUpdates, checkingUpdate, openLink, setAutoUpdateCheck, update, versionLabel } from '../app'
 import { useModal } from './useModal'

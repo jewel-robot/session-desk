@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
-import { Check, ChevronDown } from 'lucide-vue-next'
+import { Check, ChevronDown } from '@lucide/vue'
 
 const props = defineProps<{
   modelValue: string

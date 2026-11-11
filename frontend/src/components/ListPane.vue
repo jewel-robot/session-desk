@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AlertCircle, ArrowDownWideNarrow, CircleHelp, Layers3, ListChecks, LoaderCircle, Menu, Monitor, RefreshCw, RotateCcw, Search, Settings2, Trash2, X } from 'lucide-vue-next'
+import { AlertCircle, ArrowDownWideNarrow, CircleHelp, Layers3, ListChecks, LoaderCircle, Menu, Monitor, RefreshCw, RotateCcw, Search, Settings2, Trash2, X } from '@lucide/vue'
 import DropdownSelect from './DropdownSelect.vue'
 import ProviderIcon from './ProviderIcon.vue'
 import SessionList from './SessionList.vue'

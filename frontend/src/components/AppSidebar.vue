@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Info, Layers3, Monitor, Moon, Settings2, Sparkles, Sun, Terminal, Trash2, Plus } from 'lucide-vue-next'
+import { Info, Layers3, Monitor, Moon, Settings2, Sparkles, Sun, Terminal, Trash2, Plus } from '@lucide/vue'
 import ProviderIcon from './ProviderIcon.vue'
 import { agents } from '../agents'
 import { counts, dialogs, goSessions, goTrash, openSources, provider, snapshot, sourceCounts, sourceID, sourceLabel, theme, trash, view } from '../store'

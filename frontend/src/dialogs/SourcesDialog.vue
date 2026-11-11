@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { LoaderCircle, Monitor, Terminal, X } from 'lucide-vue-next'
+import { LoaderCircle, Monitor, Terminal, X } from '@lucide/vue'
 import { agents } from '../agents'
 import { dialogs, drafts, saveSources, saving, snapshot, sourceLabel, startSource, starting } from '../store'
 import { useModal } from './useModal'

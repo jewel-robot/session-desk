@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { Copy, Download, GitBranch, Play, Trash2 } from 'lucide-vue-next'
+import { Copy, Download, GitBranch, Play, Trash2 } from '@lucide/vue'
 import ProviderIcon from './ProviderIcon.vue'
 import type { Session } from '../types'
 import { activeKey, continueSession, copyCommand, exportSession, mutationBusy, prepareDelete, previewing, searchHits, selected, selecting, snapshot, toggleSelected, toggleSession } from '../store'

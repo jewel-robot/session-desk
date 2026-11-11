@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { RotateCcw, Trash2 } from 'lucide-vue-next'
+import { RotateCcw, Trash2 } from '@lucide/vue'
 import ProviderIcon from './ProviderIcon.vue'
 import { confirmTrash, mutationBusy, query, selected, selecting, shownTrash, sourceMap, toggleSelected, trashError } from '../store'
 import { openContextMenu } from '../contextMenu'

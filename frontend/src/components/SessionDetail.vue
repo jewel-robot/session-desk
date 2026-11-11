@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch, nextTick } from 'vue'
-import { AlertCircle, ArrowLeft, ChevronDown, Clock3, Copy, Download, FileText, FolderOpen, GitBranch, LoaderCircle, MessagesSquare, Play, Terminal, Trash2, X } from 'lucide-vue-next'
+import { AlertCircle, ArrowLeft, ChevronDown, Clock3, Copy, Download, FileText, FolderOpen, GitBranch, LoaderCircle, MessagesSquare, Play, Terminal, Trash2, X } from '@lucide/vue'
 import ProviderIcon from './ProviderIcon.vue'
 import TranscriptView from './TranscriptView.vue'
 import { agents } from '../agents'

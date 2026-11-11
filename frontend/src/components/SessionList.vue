@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ArrowUpRight, ChevronDown, ChevronRight, FolderOpen, Monitor, Search, Terminal } from 'lucide-vue-next'
+import { ArrowUpRight, ChevronDown, ChevronRight, FolderOpen, Monitor, Search, Terminal } from '@lucide/vue'
 import SessionItem from './SessionItem.vue'
 import { groupOpen, groups, loading, openSources, pageSizes, query, selected, selecting, snapshot, sourceLabel, toggleGroup, toggleSelected } from '../store'
 import { shortDate } from '../format'

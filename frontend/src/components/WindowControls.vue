@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref, shallowRef } from 'vue'
-import { Copy, Minus, Square, X } from 'lucide-vue-next'
+import { Copy, Minus, Square, X } from '@lucide/vue'
 
 interface DesktopRuntime {
   Window: {

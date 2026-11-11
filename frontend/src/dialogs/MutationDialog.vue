@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { GitBranch, LoaderCircle, RotateCcw, Trash2, X } from 'lucide-vue-next'
+import { GitBranch, LoaderCircle, RotateCcw, Trash2, X } from '@lucide/vue'
 import ProviderIcon from '../components/ProviderIcon.vue'
 import { deletePlan, dialogs, mutation, mutationBusy, mutationTitle, runMutation, sourceMap, trashTargets } from '../store'
 import { useModal } from './useModal'

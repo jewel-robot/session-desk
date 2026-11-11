@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { AlertCircle, Check, X } from 'lucide-vue-next'
+import { AlertCircle, Check, X } from '@lucide/vue'
 import { toast } from '../store'
 </script>
 

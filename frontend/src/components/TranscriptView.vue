@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { Brain, ChevronRight, Code2, Terminal, UserRound, SlidersHorizontal } from 'lucide-vue-next'
+import { Brain, ChevronRight, Code2, Terminal, UserRound, SlidersHorizontal } from '@lucide/vue'
 import { marked } from 'marked'
 import DOMPurify from 'dompurify'
 import type { Part } from '../types'

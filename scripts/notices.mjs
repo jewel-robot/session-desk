@@ -42,7 +42,7 @@ for (const [name, directory, filename] of [
   ['Vue', 'vue', 'LICENSE'],
   ['Marked', 'marked', 'LICENSE.md'],
   ['DOMPurify', 'dompurify', 'LICENSE'],
-  ['Lucide', 'lucide-vue-next', 'LICENSE'],
+  ['Lucide', '@lucide/vue', 'LICENSE'],
   ['Geist', '@fontsource-variable/geist', 'LICENSE'],
   ['GeistMono', '@fontsource-variable/geist-mono', 'LICENSE'],
 ]) {
