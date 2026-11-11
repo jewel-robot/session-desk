@@ -45,10 +45,12 @@ function Invoke-Sign([string]$Path) {
     Write-Output "已签名 $(Split-Path -Leaf $Path)：$status"
 }
 
-npm --prefix "$PSScriptRoot/frontend" ci --no-audit --no-fund
+Push-Location -LiteralPath "$PSScriptRoot/frontend"
+try { npm ci --no-audit --no-fund } finally { Pop-Location }
 if ($LASTEXITCODE -ne 0) { throw '安装前端依赖失败' }
 
-npm --prefix "$PSScriptRoot/frontend" run build
+Push-Location -LiteralPath "$PSScriptRoot/frontend"
+try { npm run build } finally { Pop-Location }
 if ($LASTEXITCODE -ne 0) { throw '构建前端失败' }
 
 go -C "$PSScriptRoot" test ./...
