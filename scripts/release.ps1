@@ -1,4 +1,4 @@
-﻿# Builds bin/release/v<version>/ with the installer, the portable zip and RELEASE_NOTES.md (from CHANGELOG.md).
+﻿# Builds bin/release/v<version>/ with the installer, the portable zip and RELEASE_NOTES.md (from CHANGELOG.md plus install notes).
 param(
     [string]$Makensis = $env:MAKENSIS,
     [string]$SignThumbprint = $env:SIGN_CERT_THUMBPRINT,
@@ -22,6 +22,11 @@ if ($start) {
     $rest = $changelog[$start..($changelog.Count - 1)]
     $end = ($rest | Select-String -Pattern '^## ' | Select-Object -First 1).LineNumber
     $notes = $(if ($end) { $rest[0..($end - 2)] } else { $rest }) | Where-Object { $_ -notmatch '^\[[^\]]+\]: ' }
+    $notes = @((($notes | ForEach-Object { $_ -replace '^### ', '## ' }) -join "`n").Trim()) + @(
+        '', '## 安装', '',
+        "- ``session-desk-$version-setup.exe``：安装程序，无需管理员权限，可直接覆盖升级",
+        "- ``session-desk-windows-amd64-v$version.zip``：便携版，解压后运行 ``session-desk.exe``",
+        '', '系统要求：Windows 10/11 64 位，WebView2 Runtime。')
     [IO.File]::WriteAllText("$out/RELEASE_NOTES.md", (($notes -join "`n").Trim() + "`n"), [Text.UTF8Encoding]::new($false))
 } else {
     Write-Warning "CHANGELOG.md 中没有 $version 的条目"
