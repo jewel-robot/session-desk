@@ -4,11 +4,39 @@ updates:
     directory: /
     schedule:
       interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      gomod-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # Every newer Wails v3 build is a prerelease or nightly; upgrade it by hand.
+      - dependency-name: github.com/wailsapp/wails/v3
   - package-ecosystem: npm
     directory: /frontend
     schedule:
       interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      npm-minor-and-patch:
+        update-types: [minor, patch]
+    ignore:
+      # vue-tsc needs the TypeScript 5 compiler API.
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    open-pull-requests-limit: 5
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      actions:
+        patterns: ['*']
