@@ -28,7 +28,6 @@ export const closedGroups = ref(new Set<string>())
 export const pageSizes = reactive(new Map<string, number>())
 export const talks = reactive(new Map<string, Talk>())
 export const activeKey = ref('')
-export const menuKey = ref('')
 export const launching = ref('')
 export const searchInput = ref<HTMLInputElement>()
 export const commandText = ref('')
@@ -84,6 +83,11 @@ export const groups = computed(() => {
   }
   return [...result.values()]
 })
+// Sessions in screen order: open groups only, each in its list order (rows past a group's page included).
+export const navigable = computed(() => groups.value.filter(group => groupOpen(group.key)).flatMap(group => group.sessions))
+// Rows currently rendered, in screen order.
+export const renderedKeys = computed(() => groups.value.filter(group => groupOpen(group.key))
+  .flatMap(group => group.sessions.slice(0, pageSizes.get(group.key) || 30).map(session => session.key)))
 export const visibleKeys = computed(() => view.value === 'trash' ? shownTrash.value.map(entry => entry.key) : shown.value.map(session => session.key))
 export const allSelected = computed(() => visibleKeys.value.length > 0 && visibleKeys.value.every(key => selected.value.has(key)))
 export const mutationTitle = computed(() => mutation.value === 'delete' ? '移入回收站' : mutation.value === 'restore' ? '恢复会话' : '彻底删除')
@@ -138,7 +142,7 @@ watch([query, provider, sourceID, view, () => snapshot.value.updated_at], () => 
   }, 300)
 })
 
-watch([query, provider, sourceID, view], () => { selected.value.clear(); menuKey.value = '' })
+watch([query, provider, sourceID, view], () => { selected.value.clear(); anchor = '' })
 
 export function disposeStore() {
   clearTimeout(searchTimer)
@@ -154,9 +158,38 @@ export function toggleSelected(keys: string[]) {
   }
 }
 
+let anchor = ''
+
+// Checkbox click in batch mode; with Shift the range from the previous click takes the clicked row's new state.
+export function pickSelected(key: string, range: boolean, order: string[]) {
+  const on = !selected.value.has(key)
+  const from = order.indexOf(anchor)
+  const to = order.indexOf(key)
+  const keys = range && from >= 0 && to >= 0 ? order.slice(Math.min(from, to), Math.max(from, to) + 1) : [key]
+  for (const item of keys) {
+    if (on) selected.value.add(item)
+    else selected.value.delete(item)
+  }
+  anchor = key
+}
+
+export function selectAll(keys: string[]) {
+  for (const key of keys) selected.value.add(key)
+}
+
+// Makes sure a session's row is rendered (its group open and paged far enough).
+export function revealSession(session: Session) {
+  const key = `${session.source_id}|${session.cwd}`
+  closedGroups.value.delete(key)
+  const group = groups.value.find(item => item.key === key)
+  const index = group ? group.sessions.findIndex(item => item.key === session.key) : -1
+  if (index >= (pageSizes.get(key) || 30)) pageSizes.set(key, Math.ceil((index + 1) / 30) * 30)
+}
+
 export function toggleSelection() {
   selecting.value = !selecting.value
   selected.value.clear()
+  anchor = ''
 }
 
 export function goSessions() {
@@ -183,7 +216,6 @@ export async function loadTrash() {
 
 export async function prepareDelete(keys: string[]) {
   if (!keys.length || previewing.value || mutationBusy.value) return
-  menuKey.value = ''
   previewing.value = true
   try {
     deletePlan.value = await api<DeletePlan>('delete/preview', { keys })
@@ -300,7 +332,6 @@ export async function readTalk(key: string, more = false) {
 }
 
 export async function copyCommand(session: Session) {
-  menuKey.value = ''
   try {
     const plan = await api<{ command: string }>(`command?${params({ key: session.key })}`)
     if (snapshot.value.platform === 'windows') await api('copy', { key: session.key })
@@ -312,7 +343,6 @@ export async function copyCommand(session: Session) {
 }
 
 export async function continueSession(session: Session) {
-  menuKey.value = ''
   if (!snapshot.value.can_resume) return copyCommand(session)
   launching.value = session.key
   try {
@@ -326,7 +356,6 @@ export async function continueSession(session: Session) {
 }
 
 export async function showCommand(session: Session) {
-  menuKey.value = ''
   try {
     const plan = await api<{ command: string }>(`command?${params({ key: session.key })}`)
     commandText.value = plan.command
@@ -338,7 +367,6 @@ export async function showCommand(session: Session) {
 }
 
 export async function exportSession(session: Session) {
-  menuKey.value = ''
   try {
     const response = await fetch(`/api/export?${params({ key: session.key })}`)
     if (!response.ok) throw new Error((await response.json()).error)

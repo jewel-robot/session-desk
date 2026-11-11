@@ -34,8 +34,7 @@ import {
     </header>
 
     <div v-if="selecting" class="selection-bar">
-      <label class="select-all"><input type="checkbox" :checked="allSelected" :indeterminate="selected.size > 0 && !allSelected" :disabled="!visibleKeys.length" @change="toggleSelected(visibleKeys)" />选择当前结果</label>
-      <span class="selection-count">已选择 {{ selected.size }} 项</span>
+      <label class="select-all"><input type="checkbox" aria-label="选择当前结果" :checked="allSelected" :indeterminate="selected.size > 0 && !allSelected" :disabled="!visibleKeys.length" @change="toggleSelected(visibleKeys)" /><span class="selection-count">{{ selected.size }}</span></label>
       <div class="selection-actions">
         <button v-if="view === 'sessions'" class="button small danger-outline" :disabled="!selected.size || previewing || mutationBusy" @click="prepareDelete([...selected])"><LoaderCircle v-if="previewing" :size="13" class="spin" /><Trash2 v-else :size="13" />移入回收站</button>
         <template v-else>

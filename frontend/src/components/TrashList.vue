@@ -1,16 +1,21 @@
 <script setup lang="ts">
 import { RotateCcw, Trash2 } from '@lucide/vue'
 import ProviderIcon from './ProviderIcon.vue'
-import { confirmTrash, mutationBusy, query, selected, selecting, shownTrash, sourceMap, toggleSelected, trashError } from '../store'
+import { confirmTrash, mutationBusy, pickSelected, query, selected, selecting, shownTrash, sourceMap, trashError } from '../store'
 import { openContextMenu } from '../contextMenu'
 import type { TrashEntry } from '../types'
 
+// In batch mode a selected entry acts for the whole selection.
 function menu(event: MouseEvent, entry: TrashEntry) {
-  openContextMenu(event, `回收条目：${entry.title}`, [
-    { label: '恢复', icon: RotateCcw, disabled: entry.offline || mutationBusy.value, action: () => confirmTrash('restore', [entry]) },
-    { label: '彻底删除', icon: Trash2, danger: true, separated: true, disabled: entry.offline || entry.status !== 'trashed' || mutationBusy.value, action: () => confirmTrash('purge', [entry]) },
+  const many = selecting.value && selected.value.has(entry.key) && selected.value.size > 1
+  const entries = many ? shownTrash.value.filter(item => selected.value.has(item.key)) : [entry]
+  openContextMenu(event, many ? '所选条目' : `回收条目：${entry.title}`, [
+    { label: '恢复', icon: RotateCcw, disabled: mutationBusy.value || entries.every(item => item.offline), action: () => confirmTrash('restore', entries) },
+    { label: '彻底删除', icon: Trash2, danger: true, separated: true, disabled: mutationBusy.value || entries.every(item => item.offline || item.status !== 'trashed'), action: () => confirmTrash('purge', entries) },
   ])
 }
+
+const order = () => shownTrash.value.map(item => item.key)
 </script>
 
 <template>
@@ -20,7 +25,7 @@ function menu(event: MouseEvent, entry: TrashEntry) {
   </div>
   <div v-else class="trash-list">
     <article v-for="entry in shownTrash" :key="entry.key" class="trash-row" :class="{ checked: selected.has(entry.key) }" @contextmenu="menu($event, entry)">
-      <input v-if="selecting" type="checkbox" :aria-label="`选择回收条目：${entry.title}`" :checked="selected.has(entry.key)" @change="toggleSelected([entry.key])" />
+      <input v-if="selecting" type="checkbox" :aria-label="`选择回收条目：${entry.title}`" :checked="selected.has(entry.key)" @click="pickSelected(entry.key, $event.shiftKey, order())" />
       <ProviderIcon :provider="entry.provider" />
       <div class="trash-words">
         <strong>{{ entry.title }}<span v-if="entry.sessions.length > 1" class="badge accent">共 {{ entry.sessions.length }} 个会话</span></strong>

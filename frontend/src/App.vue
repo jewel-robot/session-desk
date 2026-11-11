@@ -11,16 +11,21 @@ import MutationDialog from './dialogs/MutationDialog.vue'
 import AboutDialog from './dialogs/AboutDialog.vue'
 import ContextMenu from './components/ContextMenu.vue'
 import { autoCheckUpdates, loadAppInfo } from './app'
-import { activeKey, activeSession, dialogs, disposeStore, load, menuKey, openSession, searchInput, shown, sidebarOpen, view } from './store'
+import { activeKey, activeSession, continueSession, dialogs, disposeStore, load, navigable, openSession, prepareDelete, revealSession, searchInput, selectAll, selected, selecting, sidebarOpen, view, visibleKeys } from './store'
 
 const desktopWindow = location.hostname === 'wails.localhost'
 
 function typing(target: EventTarget | null): boolean {
   const element = target as HTMLElement | null
-  return !!element?.closest('input, textarea, select, [contenteditable], [role="listbox"], dialog, .more-menu, .context-menu')
+  return !!element?.closest('input:not([type="checkbox"]), textarea, select, [contenteditable], [role="listbox"], dialog, .context-menu')
 }
 
-// Ctrl K focuses search; ↑/↓ move between sessions in the list when focus is not in a field; F1 opens About.
+function dialogOpen(): boolean {
+  return dialogs.sources || dialogs.command || dialogs.mutation || dialogs.about
+}
+
+// Ctrl K focuses search; ↑/↓ move through the list in screen order; Enter continues and Delete trashes the
+// open session (or the selection); Ctrl A selects the current results in batch mode; F1 opens About.
 function keyboard(event: KeyboardEvent) {
   if (event.key === 'F1') {
     event.preventDefault()
@@ -33,27 +38,46 @@ function keyboard(event: KeyboardEvent) {
     return
   }
   if (event.key === 'Escape') {
-    menuKey.value = ''
     sidebarOpen.value = false
     return
   }
-  if ((event.key === 'ArrowDown' || event.key === 'ArrowUp') && view.value === 'sessions' && !event.altKey && !event.ctrlKey && !event.metaKey
-    && !typing(event.target) && !dialogs.sources && !dialogs.command && !dialogs.mutation && !dialogs.about) {
-    const list = shown.value
+  if (view.value !== 'sessions' || event.altKey || typing(event.target) || dialogOpen()) return
+  const modifier = event.ctrlKey || event.metaKey
+  if (modifier && event.key.toLowerCase() === 'a' && selecting.value) {
+    event.preventDefault()
+    selectAll(visibleKeys.value)
+    return
+  }
+  if (modifier) return
+  if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+    const list = navigable.value
     if (!list.length) return
     event.preventDefault()
     const index = list.findIndex(session => session.key === activeKey.value)
-    const next = event.key === 'ArrowDown' ? Math.min(list.length - 1, index + 1) : Math.max(0, index < 0 ? 0 : index - 1)
-    void openSession(list[next]!)
-    requestAnimationFrame(() => document.querySelector(`.session-item[data-key="${CSS.escape(list[next]!.key)}"]`)?.scrollIntoView({ block: 'nearest' }))
+    const next = index < 0 ? 0 : event.key === 'ArrowDown' ? Math.min(list.length - 1, index + 1) : Math.max(0, index - 1)
+    const target = list[next]!
+    revealSession(target)
+    void openSession(target)
+    requestAnimationFrame(() => document.querySelector(`.session-item[data-key="${CSS.escape(target.key)}"]`)?.scrollIntoView({ block: 'nearest' }))
+    return
+  }
+  if (event.key === 'Delete') {
+    const keys = selecting.value && selected.value.size ? [...selected.value] : activeKey.value ? [activeKey.value] : []
+    if (!keys.length) return
+    event.preventDefault()
+    void prepareDelete(keys)
+    return
+  }
+  // Enter on another control keeps its own meaning; on the page or the open session's row it continues the session.
+  if (event.key === 'Enter' && activeSession.value) {
+    const element = event.target as HTMLElement
+    if (element.closest('button, a, summary') && !element.closest('.session-item.active')) return
+    event.preventDefault()
+    void continueSession(activeSession.value)
   }
 }
 
 let updateTimer: ReturnType<typeof setTimeout> | undefined
-
-function closeMenu(event: MouseEvent) {
-  if (!(event.target as HTMLElement).closest('.more-wrap')) menuKey.value = ''
-}
 
 onMounted(() => {
   void load()
@@ -61,14 +85,12 @@ onMounted(() => {
   // Defer the network check so it never competes with the first session scan.
   updateTimer = setTimeout(() => void autoCheckUpdates(), 4000)
   window.addEventListener('keydown', keyboard)
-  window.addEventListener('click', closeMenu)
 })
 
 onUnmounted(() => {
   clearTimeout(updateTimer)
   disposeStore()
   window.removeEventListener('keydown', keyboard)
-  window.removeEventListener('click', closeMenu)
 })
 </script>
 

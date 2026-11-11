@@ -3,7 +3,7 @@ import { computed } from 'vue'
 import { Copy, Download, GitBranch, Play, Trash2 } from '@lucide/vue'
 import ProviderIcon from './ProviderIcon.vue'
 import type { Session } from '../types'
-import { activeKey, continueSession, copyCommand, exportSession, mutationBusy, prepareDelete, previewing, searchHits, selected, selecting, snapshot, toggleSelected, toggleSession } from '../store'
+import { activeKey, continueSession, copyCommand, exportSession, mutationBusy, pickSelected, prepareDelete, previewing, renderedKeys, searchHits, selected, selecting, snapshot, toggleSession } from '../store'
 import { openContextMenu, type MenuItem } from '../contextMenu'
 import { shortDate, size } from '../format'
 
@@ -13,6 +13,13 @@ const excerpt = computed(() => searchHits.value.get(props.session.key))
 
 function menu(event: MouseEvent) {
   const session = props.session
+  // In batch mode a selected row acts for the whole selection.
+  if (selecting.value && selected.value.has(session.key) && selected.value.size > 1) {
+    openContextMenu(event, '所选会话', [
+      { label: '移入回收站', icon: Trash2, danger: true, disabled: previewing.value || mutationBusy.value, action: () => prepareDelete([...selected.value]) },
+    ])
+    return
+  }
   const items: MenuItem[] = [
     { label: snapshot.value.can_resume ? '继续会话' : '复制命令', icon: snapshot.value.can_resume ? Play : Copy, action: () => continueSession(session) },
   ]
@@ -27,7 +34,7 @@ function menu(event: MouseEvent) {
 
 <template>
   <article class="session-item" :class="{ active, checked: selected.has(session.key) }" :data-key="session.key" @contextmenu="menu">
-    <input v-if="selecting" type="checkbox" :aria-label="`选择会话：${session.title}`" :checked="selected.has(session.key)" @change="toggleSelected([session.key])" />
+    <input v-if="selecting" type="checkbox" :aria-label="`选择会话：${session.title}`" :checked="selected.has(session.key)" @click="pickSelected(session.key, $event.shiftKey, renderedKeys)" />
     <ProviderIcon :provider="session.provider" />
     <button class="session-title-button" :aria-label="`${active ? '收起' : '展开'}会话：${session.title}`" :aria-expanded="active" @click="toggleSession(session)">
       <span class="session-title-line"><span class="session-title">{{ session.title }}</span><span class="session-date">{{ shortDate(session.updated_at) }}</span></span>

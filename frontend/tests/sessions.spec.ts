@@ -120,3 +120,30 @@ test('uses Magpie agent assets and reads both new providers', async ({ page }) =
   await page.getByRole('button', { name: '展开会话：整理 Antigravity CLI 项目摘要', exact: true }).click()
   await expect(page.locator('.talk-empty')).toContainText('会话摘要')
 })
+
+test('arrow keys follow the on-screen order and skip collapsed projects', async ({ page }) => {
+  const titles = await page.locator('.session-item .session-title').allTextContents()
+  const current = page.locator('.detail-title h2')
+  await page.locator('.session-item').first().locator('.session-title-button').click()
+  for (const title of titles.slice(1, 6)) {
+    await page.keyboard.press('ArrowDown')
+    await expect(current).toHaveText(title)
+  }
+  await page.keyboard.press('ArrowUp')
+  await expect(current).toHaveText(titles[4]!)
+  await page.locator('.project-heading').nth(1).click()
+  await page.locator('.session-item').filter({ hasText: titles[3]! }).locator('.session-title-button').click()
+  await page.keyboard.press('ArrowDown')
+  await expect(current).toHaveText(titles[8]!)
+})
+
+test('Enter continues the open session', async ({ page }) => {
+  const commands: string[] = []
+  await page.route('**/api/command**', route => { commands.push(route.request().url()); return route.fulfill({ json: { command: 'claude --resume x' } }) })
+  await page.route('**/api/copy', route => route.fulfill({ json: { ok: true } }))
+  await page.route('**/api/resume', route => route.fulfill({ json: { ok: true } }))
+  await page.locator('.session-item').first().locator('.session-title-button').click()
+  await page.keyboard.press('Enter')
+  await expect.poll(() => commands.length).toBeGreaterThan(0)
+  await expect(page.locator('.session-item').first()).toHaveClass(/active/)
+})
