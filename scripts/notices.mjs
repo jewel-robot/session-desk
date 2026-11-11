@@ -13,6 +13,19 @@ async function copyNotice(source, target) {
   await writeFile(target, data)
 }
 
+// Copies the first license file that exists in a package directory.
+async function copyLicense(directory, target) {
+  for (const filename of ['LICENSE', 'LICENSE.md', 'LICENSE.txt', 'COPYING']) {
+    try {
+      await copyNotice(join(directory, filename), target)
+      return
+    } catch (error) {
+      if (error.code !== 'ENOENT') throw error
+    }
+  }
+  throw new Error(`License not found: ${directory}`)
+}
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..')
 const output = join(root, 'bin', 'licenses')
 await mkdir(output, { recursive: true })
@@ -25,28 +38,17 @@ const modules = execFileSync(go, ['list', '-deps', '-f', '{{if .Module}}{{.Modul
 const entries = new Map(modules.trim().split('\n').filter(Boolean).map(line => line.split('|')))
 for (const [name, directory] of entries) {
   if (name === 'sessiondesk') continue
-  const license = ['LICENSE', 'LICENSE.txt', 'LICENSE.md', 'COPYING']
-  let copied = false
-  for (const filename of license) {
-    try {
-      await copyNotice(join(directory, filename), join(output, `${name.replace(/[^a-zA-Z0-9._-]/g, '_')}.txt`))
-      copied = true
-      break
-    } catch (error) {
-      if (error.code !== 'ENOENT') throw error
-    }
-  }
-  if (!copied) throw new Error(`License not found: ${name}`)
+  await copyLicense(directory, join(output, `${name.replace(/[^a-zA-Z0-9._-]/g, '_')}.txt`))
 }
-for (const [name, directory, filename] of [
-  ['Vue', 'vue', 'LICENSE'],
-  ['Marked', 'marked', 'LICENSE.md'],
-  ['DOMPurify', 'dompurify', 'LICENSE'],
-  ['Lucide', '@lucide/vue', 'LICENSE'],
-  ['Geist', '@fontsource-variable/geist', 'LICENSE'],
-  ['GeistMono', '@fontsource-variable/geist-mono', 'LICENSE'],
+for (const [name, directory] of [
+  ['Vue', 'vue'],
+  ['Marked', 'marked'],
+  ['DOMPurify', 'dompurify'],
+  ['Lucide', '@lucide/vue'],
+  ['Geist', '@fontsource-variable/geist'],
+  ['GeistMono', '@fontsource-variable/geist-mono'],
 ]) {
-  await copyNotice(join(root, 'frontend', 'node_modules', directory, filename), join(output, `${name}.txt`))
+  await copyLicense(join(root, 'frontend', 'node_modules', directory), join(output, `${name}.txt`))
 }
 const goroot = execFileSync(go, ['env', 'GOROOT'], { encoding: 'utf8' }).trim()
 await copyNotice(join(goroot, 'LICENSE'), join(output, 'Go.txt'))
