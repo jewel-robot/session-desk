@@ -24,6 +24,10 @@ jobs:
       # Installs dependencies, builds the frontend and app, and runs go test and go vet.
       - name: Build
         run: .\build.ps1 -SkipInstaller
+        # Long temp path: tests compare working directories, and the default TEMP is an 8.3 short path.
+        env:
+          TEMP: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
       - name: Install Playwright browser
         working-directory: frontend
         run: npx playwright install chromium

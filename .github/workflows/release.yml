@@ -28,6 +28,10 @@ jobs:
         run: choco install nsis --no-progress -y
       - name: Build
         run: .\scripts\release.ps1 -Makensis "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
+        # Long temp path: tests compare working directories, and the default TEMP is an 8.3 short path.
+        env:
+          TEMP: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}
