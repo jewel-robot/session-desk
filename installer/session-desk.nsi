@@ -24,6 +24,9 @@ SetCompressor /SOLID lzma
 !endif
 !define UNINSTKEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\SessionDesk"
 !define EXE "session-desk.exe"
+; Microsoft Edge WebView2 Runtime (Evergreen): client GUID and the official bootstrapper link.
+!define WV2_GUID "{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+!define WV2_URL "https://go.microsoft.com/fwlink/p/?LinkId=2124703"
 
 Name "${APPNAME}"
 OutFile "${OUTFILE}"
@@ -74,6 +77,7 @@ ${UnStrLoc}
 
 Section "${APPNAME}（必需）" SecMain
   SectionIn RO
+  Call EnsureWebView2
   Call CloseRunning
   SetOutPath "$INSTDIR"
   SetOverwrite on
@@ -137,6 +141,56 @@ Function CloseRunning
   Sleep 500
 FunctionEnd
 
+; $R0 = 1 when a WebView2 Runtime is registered per machine (64- or 32-bit view) or per user.
+Function HasWebView2
+  StrCpy $R0 0
+  ReadRegStr $R1 HKLM "SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\${WV2_GUID}" "pv"
+  ${If} $R1 == ""
+  ${OrIf} $R1 == "0.0.0.0"
+    ReadRegStr $R1 HKLM "SOFTWARE\Microsoft\EdgeUpdate\Clients\${WV2_GUID}" "pv"
+  ${EndIf}
+  ${If} $R1 == ""
+  ${OrIf} $R1 == "0.0.0.0"
+    ReadRegStr $R1 HKCU "Software\Microsoft\EdgeUpdate\Clients\${WV2_GUID}" "pv"
+  ${EndIf}
+  ${If} $R1 != ""
+  ${AndIf} $R1 != "0.0.0.0"
+    StrCpy $R0 1
+  ${EndIf}
+FunctionEnd
+
+; Without WebView2 the window cannot open. Offer Microsoft's bootstrapper; silent installs fetch it without asking
+; and carry on if that fails.
+Function EnsureWebView2
+  Call HasWebView2
+  ${If} $R0 == 1
+    Return
+  ${EndIf}
+  ${IfNot} ${Silent}
+    MessageBox MB_YESNO|MB_ICONQUESTION "${APPNAME} 需要 Microsoft Edge WebView2 Runtime。现在下载并安装？" IDYES +2
+    Abort
+  ${EndIf}
+  InitPluginsDir
+  StrCpy $R2 "$PLUGINSDIR\MicrosoftEdgeWebview2Setup.exe"
+  DetailPrint "下载 WebView2 Runtime"
+  nsExec::ExecToLog '"$SYSDIR\curl.exe" -fsSL --retry 2 -o "$R2" "${WV2_URL}"'
+  Pop $R3
+  ${If} $R3 != 0
+    nsExec::ExecToLog `"$SYSDIR\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -NonInteractive -Command "Invoke-WebRequest -UseBasicParsing -Uri '${WV2_URL}' -OutFile '$R2'"`
+    Pop $R3
+  ${EndIf}
+  ${If} $R3 == 0
+    DetailPrint "安装 WebView2 Runtime"
+    ExecWait '"$R2" /silent /install' $R3
+  ${EndIf}
+  Call HasWebView2
+  ${If} $R0 != 1
+  ${AndIfNot} ${Silent}
+    MessageBox MB_OKCANCEL|MB_ICONEXCLAMATION "WebView2 Runtime 未能安装，${APPNAME} 可能无法启动。继续安装？" IDOK +2
+    Abort
+  ${EndIf}
+FunctionEnd
+
 Function un.CloseRunning
   nsExec::ExecToStack '"$SYSDIR\tasklist.exe" /FI "IMAGENAME eq ${EXE}" /NH'
   Pop $0
@@ -160,6 +214,16 @@ Function .onInit
   SetShellVarContext current
   ${If} ${FileExists} "$DESKTOP\${APPNAME}.lnk"
     !insertmacro SelectSection ${SecDesktop}
+  ${EndIf}
+FunctionEnd
+
+; Silent upgrades started by the app pass /RELAUNCH to start it again when done.
+Function .onInstSuccess
+  ${GetParameters} $0
+  ClearErrors
+  ${GetOptions} $0 "/RELAUNCH" $1
+  ${IfNot} ${Errors}
+    Exec '"$INSTDIR\${EXE}"'
   ${EndIf}
 FunctionEnd
 
