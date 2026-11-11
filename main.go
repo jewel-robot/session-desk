@@ -92,6 +92,11 @@ func main() {
 		log.Fatal(server.ListenAndServe())
 	}
 	options.OpenURL = openURL
+	if options.Updates != nil {
+		options.Installer = update.NewInstaller(buildinfo.Repository)
+		// The installer closes and restarts the app; quit right away so it can replace the files.
+		options.Installer.Done = func() { time.AfterFunc(300*time.Millisecond, quitApp) }
+	}
 	if err := runDesktop(web.NewHandler(service, assets, options), preferences, appIcon); err != nil {
 		fatal(err)
 	}

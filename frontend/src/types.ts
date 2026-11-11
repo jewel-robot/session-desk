@@ -112,6 +112,7 @@ export interface AppInfo {
   config_dir: string
   log_path: string
   can_open_url: boolean
+  can_install: boolean
 }
 
 export interface UpdateResult {
@@ -121,8 +122,16 @@ export interface UpdateResult {
   url?: string
   download_url?: string
   asset_name?: string
+  digest?: string
+  size?: number
   published_at?: string
-  notes?: string
   error?: string
   checked_at?: string
+}
+
+export interface InstallState {
+  phase: 'idle' | 'downloading' | 'launching' | 'launched' | 'error'
+  received: number
+  total: number
+  error?: string
 }

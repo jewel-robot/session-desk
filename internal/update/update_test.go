@@ -45,11 +45,11 @@ func serve(t *testing.T, status int, body string) *Checker {
 }
 
 func TestCheckAvailablePrefersInstaller(t *testing.T) {
-	checker := serve(t, 200, `{"tag_name":"v0.4.0","html_url":"https://github.com/owner/repo/releases/tag/v0.4.0","body":"notes","assets":[
+	checker := serve(t, 200, `{"tag_name":"v0.4.0","html_url":"https://github.com/owner/repo/releases/tag/v0.4.0","assets":[
 		{"name":"session-desk-windows-amd64-v0.4.0.zip","browser_download_url":"https://example.test/zip"},
-		{"name":"session-desk-0.4.0-setup.exe","browser_download_url":"https://example.test/setup"}]}`)
+		{"name":"session-desk-0.4.0-setup.exe","browser_download_url":"https://example.test/setup","digest":"sha256:ab","size":3}]}`)
 	result := checker.Check(context.Background(), true)
-	if result.Status != StatusAvailable || result.Latest != "0.4.0" || result.DownloadURL != "https://example.test/setup" {
+	if result.Status != StatusAvailable || result.Latest != "0.4.0" || result.DownloadURL != "https://example.test/setup" || result.Digest != "sha256:ab" || result.Size != 3 {
 		t.Fatalf("unexpected result %+v", result)
 	}
 }

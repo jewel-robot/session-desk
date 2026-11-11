@@ -1,12 +1,17 @@
 // Application-level state: version info, update checks and external links.
 import { computed, ref, shallowRef } from 'vue'
 import { api } from './api'
-import type { AppInfo, UpdateResult } from './types'
+import { notify } from './store'
+import type { AppInfo, InstallState, UpdateResult } from './types'
 
 export const appInfo = shallowRef<AppInfo | null>(null)
 export const update = shallowRef<UpdateResult | null>(null)
 export const checkingUpdate = ref(false)
 export const updateAvailable = computed(() => update.value?.status === 'available')
+export const installing = shallowRef<InstallState | null>(null)
+// One-click update needs the desktop app and a release installer with a published SHA-256 digest.
+export const canInstall = computed(() => !!appInfo.value?.can_install && updateAvailable.value
+  && !!update.value?.digest && /-setup\.exe$/i.test(update.value?.asset_name || ''))
 export const versionLabel = computed(() => {
   const version = appInfo.value?.version
   if (!version) return ''
@@ -45,6 +50,30 @@ export async function checkUpdates() {
 export async function setAutoUpdateCheck(enabled: boolean) {
   await api('app/preferences', { update_check: enabled })
   if (appInfo.value) appInfo.value = { ...appInfo.value, update_check: enabled }
+}
+
+// Downloads and verifies the installer in the app, then the installer upgrades and restarts it.
+// Any failure falls back to the release page.
+export async function installUpdate() {
+  if (installing.value) return
+  let phase = ''
+  try {
+    let state = await api<InstallState>('update/install', {})
+    installing.value = state
+    while (state.phase === 'downloading' || state.phase === 'launching') {
+      phase = state.phase
+      await new Promise(resolve => setTimeout(resolve, 250))
+      state = await api<InstallState>('update/install')
+      installing.value = state
+    }
+    if (state.phase === 'error') throw new Error(state.error || '更新失败')
+  } catch (cause) {
+    // The app quits right after the installer starts, so a dropped connection then is expected.
+    if (phase === 'launching') return
+    installing.value = null
+    notify(cause instanceof Error ? cause.message : '更新失败', true)
+    if (update.value?.url) await openLink(update.value.url).catch(() => undefined)
+  }
 }
 
 // Links open in the system browser from the desktop window; the browser preview uses a new tab.

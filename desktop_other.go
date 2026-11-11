@@ -18,3 +18,5 @@ func runDesktop(http.Handler, *prefs.Store, []byte) error {
 func openURL(string) error { return errors.New("当前平台请在浏览器中打开链接") }
 
 func showError(string, string) {}
+
+func quitApp() {}

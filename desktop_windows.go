@@ -135,6 +135,12 @@ func openURL(link string) error {
 	return app.Browser.OpenURL(link)
 }
 
+func quitApp() {
+	if app := application.Get(); app != nil {
+		app.Quit()
+	}
+}
+
 var messageBox = syscall.NewLazyDLL("user32.dll").NewProc("MessageBoxW")
 
 func showError(title, message string) {

@@ -1,5 +1,4 @@
-// Package update checks GitHub Releases for a newer Session Desk build.
-// It only reports what is available; downloading and installing stay with the user.
+// Package update checks GitHub Releases for a newer Session Desk build and can install it (see Installer).
 package update
 
 import (
@@ -32,8 +31,9 @@ type Result struct {
 	URL         string    `json:"url,omitempty"`
 	DownloadURL string    `json:"download_url,omitempty"`
 	AssetName   string    `json:"asset_name,omitempty"`
+	Digest      string    `json:"digest,omitempty"` // "sha256:<hex>" published by GitHub for the asset
+	Size        int64     `json:"size,omitempty"`
 	PublishedAt string    `json:"published_at,omitempty"`
-	Notes       string    `json:"notes,omitempty"`
 	Error       string    `json:"error,omitempty"`
 	CheckedAt   time.Time `json:"checked_at"`
 }
@@ -58,13 +58,14 @@ func NewChecker(repository, current string) *Checker {
 type release struct {
 	TagName     string `json:"tag_name"`
 	HTMLURL     string `json:"html_url"`
-	Body        string `json:"body"`
 	Draft       bool   `json:"draft"`
 	Prerelease  bool   `json:"prerelease"`
 	PublishedAt string `json:"published_at"`
 	Assets      []struct {
 		Name               string `json:"name"`
 		BrowserDownloadURL string `json:"browser_download_url"`
+		Digest             string `json:"digest"`
+		Size               int64  `json:"size"`
 	} `json:"assets"`
 }
 
@@ -127,11 +128,10 @@ func (c *Checker) fetch(ctx context.Context) Result {
 	result.Latest = strings.TrimPrefix(strings.TrimSpace(latest.TagName), "v")
 	result.URL = latest.HTMLURL
 	result.PublishedAt = latest.PublishedAt
-	result.Notes = truncate(latest.Body, 4000)
 	for _, preferred := range []string{"-setup.exe", ".exe", "windows-amd64", ".zip"} {
 		for _, asset := range latest.Assets {
 			if strings.Contains(strings.ToLower(asset.Name), preferred) {
-				result.DownloadURL, result.AssetName = asset.BrowserDownloadURL, asset.Name
+				result.DownloadURL, result.AssetName, result.Digest, result.Size = asset.BrowserDownloadURL, asset.Name, asset.Digest, asset.Size
 				break
 			}
 		}
@@ -151,14 +151,6 @@ func failed(result Result, err error) Result {
 	result.Status = StatusError
 	result.Error = err.Error()
 	return result
-}
-
-func truncate(text string, limit int) string {
-	runes := []rune(text)
-	if len(runes) <= limit {
-		return text
-	}
-	return string(runes[:limit]) + "…"
 }
 
 // Newer reports whether candidate is a higher semantic version than current.

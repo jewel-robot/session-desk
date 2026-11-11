@@ -95,3 +95,15 @@ func TestOpenURLValidation(t *testing.T) {
 		t.Fatal("browser preview mode should refuse to open links")
 	}
 }
+
+func TestUpdateInstallNeedsInstaller(t *testing.T) {
+	handler := appHandler(t, Options{Build: buildinfo.Info{Version: "1.2.3"}})
+	if response := call(handler, "POST", "/api/update/install", `{}`); response.Code == 200 {
+		t.Fatal("install must be refused without an installer")
+	}
+	var state update.InstallState
+	json.NewDecoder(call(handler, "GET", "/api/update/install", "").Body).Decode(&state)
+	if state.Phase != update.PhaseIdle {
+		t.Fatalf("unexpected state %+v", state)
+	}
+}

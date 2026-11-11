@@ -26,6 +26,8 @@ type Options struct {
 	LogPath   string
 	// OpenURL opens a link in the system browser; nil in browser preview mode.
 	OpenURL func(string) error
+	// Installer installs a newer release in place; nil in browser preview mode.
+	Installer *update.Installer
 }
 
 type appInfo struct {
@@ -36,11 +38,12 @@ type appInfo struct {
 	ConfigDir   string `json:"config_dir"`
 	LogPath     string `json:"log_path"`
 	CanOpenURL  bool   `json:"can_open_url"`
+	CanInstall  bool   `json:"can_install"`
 }
 
 func registerApp(mux *http.ServeMux, options Options) {
 	mux.HandleFunc("GET /api/app", func(w http.ResponseWriter, r *http.Request) {
-		info := appInfo{Info: options.Build, Repository: buildinfo.RepositoryURL(), Desktop: options.Desktop, ConfigDir: options.ConfigDir, LogPath: options.LogPath, CanOpenURL: options.OpenURL != nil, UpdateCheck: true}
+		info := appInfo{Info: options.Build, Repository: buildinfo.RepositoryURL(), Desktop: options.Desktop, ConfigDir: options.ConfigDir, LogPath: options.LogPath, CanOpenURL: options.OpenURL != nil, CanInstall: options.Installer != nil && options.Updates != nil, UpdateCheck: true}
 		if options.Preferences != nil {
 			info.UpdateCheck = options.Preferences.Get().AutoUpdateCheck()
 		}
@@ -77,6 +80,24 @@ func registerApp(mux *http.ServeMux, options Options) {
 			return
 		}
 		respond(w, options.Updates.Check(context.WithoutCancel(r.Context()), force))
+	})
+	mux.HandleFunc("GET /api/update/install", func(w http.ResponseWriter, r *http.Request) {
+		if options.Installer == nil {
+			respond(w, update.InstallState{Phase: update.PhaseIdle})
+			return
+		}
+		respond(w, options.Installer.State())
+	})
+	mux.HandleFunc("POST /api/update/install", func(w http.ResponseWriter, r *http.Request) {
+		if options.Installer == nil || options.Updates == nil {
+			fail(w, fmt.Errorf("当前模式不支持自动更新"))
+			return
+		}
+		if err := options.Installer.Start(options.Updates.Check(context.WithoutCancel(r.Context()), false)); err != nil {
+			fail(w, err)
+			return
+		}
+		respond(w, options.Installer.State())
 	})
 	mux.HandleFunc("POST /api/open-url", func(w http.ResponseWriter, r *http.Request) {
 		var in struct {
