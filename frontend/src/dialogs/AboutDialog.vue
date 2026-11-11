@@ -15,13 +15,6 @@ const shortcuts = [
   { keys: ['F1'], label: '打开关于与帮助' },
 ]
 
-const built = computed(() => {
-  const date = appInfo.value?.date
-  if (!date || date === 'unknown') return ''
-  const parsed = new Date(date)
-  return Number.isNaN(parsed.getTime()) ? date : parsed.toLocaleString('zh-CN', { dateStyle: 'medium', timeStyle: 'short' })
-})
-
 const status = computed(() => {
   const result = update.value
   if (checkingUpdate.value) return { tone: 'muted', text: '正在检查更新…' }
@@ -71,7 +64,7 @@ async function copy(text: string) {
         <img src="/icon.svg" alt="" width="52" height="52" draggable="false" />
         <div>
           <h2 id="about-title">Session Desk</h2>
-          <p class="about-version"><code>{{ versionLabel || '未知版本' }}</code><span v-if="appInfo?.commit && appInfo.commit !== 'unknown'">· {{ appInfo.commit }}</span><span v-if="built">· {{ built }}</span></p>
+          <p class="about-version"><code>{{ versionLabel || '未知版本' }}</code></p>
         </div>
       </div>
       <button class="icon-button" aria-label="关闭关于" @click="dialogs.about = false"><X :size="18" /></button>
@@ -129,7 +122,7 @@ async function copy(text: string) {
 .about-dialog { width: min(560px, calc(100vw - 32px)); }
 .about-identity { display: flex; align-items: center; gap: var(--space-3); }
 .about-identity img { flex: none; filter: drop-shadow(0 4px 10px rgba(70, 80, 192, .25)); }
-.about-version { display: flex; flex-wrap: wrap; gap: var(--space-1-5, 6px); color: var(--color-text-tertiary) !important; font-size: var(--text-xs) !important; }
+.about-version { font-size: var(--text-xs) !important; }
 .about-version code { color: var(--color-accent-text); font-weight: var(--weight-medium); }
 .about-card { margin-top: var(--space-3); padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); background: var(--color-panel); box-shadow: var(--shadow-sm); }
 .about-card:first-child { margin-top: 0; }

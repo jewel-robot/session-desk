@@ -106,8 +106,6 @@ export interface TrashEntry {
 
 export interface AppInfo {
   version: string
-  commit: string
-  date: string
   repository: string
   desktop: boolean
   update_check: boolean

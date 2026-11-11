@@ -38,6 +38,7 @@ function backdrop(event: MouseEvent) { if (event.target === element.value) dialo
 .source-card-heading { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-2-5) var(--space-3); background: var(--color-panel-subtle); border-bottom: 1px solid var(--color-border-subtle); }
 .source-card-icon { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: var(--radius-sm); background: var(--color-inset); color: var(--color-text-secondary); }
 .source-card-icon.wsl { background: var(--color-wsl-soft); color: var(--color-wsl); }
+.source-card-icon.windows { background: var(--color-windows-soft); color: var(--color-windows); }
 .source-card-heading h3 { font-size: var(--text-sm); font-weight: var(--weight-semibold); }
 .source-status { display: inline-flex; align-items: center; gap: var(--space-1-5); margin-left: auto; color: var(--color-text-tertiary); font-size: var(--text-2xs); }
 .source-status .status-dot { width: 6px; height: 6px; }

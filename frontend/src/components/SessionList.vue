@@ -28,7 +28,6 @@ import { shortDate } from '../format'
         </button>
       </div>
       <div v-if="groupOpen(group.key)" class="project-sessions">
-        <div class="project-path" :title="group.cwd">{{ group.cwd || '未记录工作目录' }}</div>
         <SessionItem v-for="session in group.sessions.slice(0, pageSizes.get(group.key) || 30)" :key="session.key" :session="session" />
         <button v-if="group.sessions.length > (pageSizes.get(group.key) || 30)" class="text-button show-more" @click="pageSizes.set(group.key, (pageSizes.get(group.key) || 30) + 30)">再显示 {{ Math.min(30, group.sessions.length - (pageSizes.get(group.key) || 30)) }} 个会话<ChevronDown :size="13" /></button>
       </div>
@@ -40,8 +39,8 @@ import { shortDate } from '../format'
 .project-list { padding: 0 var(--space-2); }
 .project-group + .project-group { margin-top: var(--space-1); }
 .project-heading-row {
-  position: sticky; top: 0; z-index: 2; display: flex; align-items: center; gap: var(--space-2);
-  padding: var(--space-1) 0; background: var(--color-panel);
+  position: sticky; top: calc(-1 * var(--space-1)); z-index: 3; display: flex; align-items: center; gap: var(--space-2);
+  margin: 0 calc(-1 * var(--space-2)); padding: var(--space-1) var(--space-2); background: var(--color-panel);
 }
 .project-heading-row > input { margin-left: var(--space-2); }
 .project-heading {
@@ -54,7 +53,6 @@ import { shortDate } from '../format'
 .project-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--text-xs); font-weight: var(--weight-semibold); color: var(--color-text); }
 .project-meta { display: flex; align-items: center; gap: var(--space-2); margin-left: auto; color: var(--color-text-tertiary); font-size: var(--text-2xs); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .project-meta > span:first-child { min-width: 18px; height: 16px; padding: 0 5px; border-radius: var(--radius-full); background: var(--color-inset); text-align: center; line-height: 16px; color: var(--color-text-secondary); }
-.project-path { padding: 0 var(--space-2) var(--space-1) 29px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-family: var(--font-mono); font-size: var(--text-2xs); color: var(--color-text-tertiary); }
 .project-sessions { display: flex; flex-direction: column; gap: 1px; padding-bottom: var(--space-2); }
 .show-more { align-self: flex-start; margin: var(--space-1) 0 0 26px; }
 

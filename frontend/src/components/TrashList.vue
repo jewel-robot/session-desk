@@ -2,6 +2,15 @@
 import { RotateCcw, Trash2 } from 'lucide-vue-next'
 import ProviderIcon from './ProviderIcon.vue'
 import { confirmTrash, mutationBusy, query, selected, selecting, shownTrash, sourceMap, toggleSelected, trashError } from '../store'
+import { openContextMenu } from '../contextMenu'
+import type { TrashEntry } from '../types'
+
+function menu(event: MouseEvent, entry: TrashEntry) {
+  openContextMenu(event, `回收条目：${entry.title}`, [
+    { label: '恢复', icon: RotateCcw, disabled: entry.offline || mutationBusy.value, action: () => confirmTrash('restore', [entry]) },
+    { label: '彻底删除', icon: Trash2, danger: true, separated: true, disabled: entry.offline || entry.status !== 'trashed' || mutationBusy.value, action: () => confirmTrash('purge', [entry]) },
+  ])
+}
 </script>
 
 <template>
@@ -10,7 +19,7 @@ import { confirmTrash, mutationBusy, query, selected, selecting, shownTrash, sou
     <h2>{{ query ? '没有找到匹配的记录' : '回收站为空' }}</h2>
   </div>
   <div v-else class="trash-list">
-    <article v-for="entry in shownTrash" :key="entry.key" class="trash-row" :class="{ checked: selected.has(entry.key) }">
+    <article v-for="entry in shownTrash" :key="entry.key" class="trash-row" :class="{ checked: selected.has(entry.key) }" @contextmenu="menu($event, entry)">
       <input v-if="selecting" type="checkbox" :aria-label="`选择回收条目：${entry.title}`" :checked="selected.has(entry.key)" @change="toggleSelected([entry.key])" />
       <ProviderIcon :provider="entry.provider" />
       <div class="trash-words">

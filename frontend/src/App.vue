@@ -9,6 +9,7 @@ import SourcesDialog from './dialogs/SourcesDialog.vue'
 import CommandDialog from './dialogs/CommandDialog.vue'
 import MutationDialog from './dialogs/MutationDialog.vue'
 import AboutDialog from './dialogs/AboutDialog.vue'
+import ContextMenu from './components/ContextMenu.vue'
 import { autoCheckUpdates, loadAppInfo } from './app'
 import { activeKey, activeSession, dialogs, disposeStore, load, menuKey, openSession, searchInput, shown, sidebarOpen, view } from './store'
 
@@ -16,7 +17,7 @@ const desktopWindow = location.hostname === 'wails.localhost'
 
 function typing(target: EventTarget | null): boolean {
   const element = target as HTMLElement | null
-  return !!element?.closest('input, textarea, select, [contenteditable], [role="listbox"], dialog, .more-menu')
+  return !!element?.closest('input, textarea, select, [contenteditable], [role="listbox"], dialog, .more-menu, .context-menu')
 }
 
 // Ctrl K focuses search; ↑/↓ move between sessions in the list when focus is not in a field; F1 opens About.
@@ -83,6 +84,7 @@ onUnmounted(() => {
     <CommandDialog />
     <MutationDialog />
     <AboutDialog />
+    <ContextMenu />
     <AppToast />
   </div>
 </template>

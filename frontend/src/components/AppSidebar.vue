@@ -36,7 +36,7 @@ function pickSource(id: string) { sourceID.value = id }
     <div class="sidebar-bottom">
       <button class="nav-item" title="数据源" @click="openSources"><Settings2 :size="16" /><span>数据源</span><span class="nav-trailing">{{ snapshot.sources.length }}</span></button>
       <button v-if="updateAvailable" class="update-pill" :title="`新版本 v${update?.latest} 可用`" @click="dialogs.about = true"><Sparkles :size="14" /><span>新版本 v{{ update?.latest }}</span></button>
-      <div class="sidebar-footer"><button class="version-button" :title="`关于 Session Desk${versionLabel ? ' ' + versionLabel : ''}（F1）`" aria-label="关于 Session Desk" @click="dialogs.about = true"><Info :size="14" /><code>{{ versionLabel || '关于' }}</code><span v-if="updateAvailable" class="update-dot" aria-label="有可用更新"></span></button><button class="icon-button small" :aria-label="theme === 'dark' ? '切换浅色主题' : '切换深色主题'" :title="theme === 'dark' ? '浅色主题' : '深色主题'" @click="theme = theme === 'dark' ? 'light' : 'dark'"><Sun v-if="theme === 'dark'" :size="15" /><Moon v-else :size="15" /></button></div>
+      <div class="sidebar-footer"><button class="version-button" :title="`关于 Session Desk${versionLabel ? ' ' + versionLabel : ''}（F1）`" aria-label="关于 Session Desk" @click="dialogs.about = true"><Info :size="14" /><code>{{ versionLabel || '关于' }}</code><span v-if="updateAvailable" class="update-dot" aria-label="有可用更新"></span></button><button class="icon-button small" :aria-label="theme === 'dark' ? '切换浅色主题' : '切换深色主题'" :title="theme === 'dark' ? '切换浅色主题' : '切换深色主题'" @click="theme = theme === 'dark' ? 'light' : 'dark'"><Moon v-if="theme === 'dark'" :size="15" /><Sun v-else :size="15" /></button></div>
     </div>
   </aside>
 </template>
@@ -63,8 +63,10 @@ function pickSource(id: string) { sourceID.value = id }
 .nav-item em, .filter-item em, .source-item small, .nav-trailing { flex: none; color: var(--color-text-tertiary); font-size: var(--text-2xs); font-variant-numeric: tabular-nums; font-weight: var(--weight-normal); }
 .filter-icon { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; color: var(--color-text-tertiary); }
 .filter-icon.wsl { color: var(--color-wsl); }
+.filter-icon.windows { color: var(--color-windows); }
 .filter-item .provider-icon { width: 18px; height: 18px; border-radius: 4px; }
 .source-item .status-dot { width: 6px; height: 6px; box-shadow: none; }
+.source-item small { min-width: 3ch; text-align: right; }
 .sidebar-bottom { display: flex; flex-direction: column; gap: 1px; margin-top: auto; padding-top: var(--space-6); }
 .local-note { display: flex; align-items: center; gap: var(--space-2); padding: var(--space-1) var(--space-2-5) var(--space-2); color: var(--color-text-tertiary); font-size: var(--text-xs); }
 .sidebar-footer { display: flex; align-items: center; justify-content: space-between; padding: var(--space-2) var(--space-1) 0 var(--space-2-5); margin-top: var(--space-1); border-top: 1px solid var(--color-border-subtle); color: var(--color-text-tertiary); font-size: var(--text-2xs); }

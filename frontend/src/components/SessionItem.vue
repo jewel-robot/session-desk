@@ -1,18 +1,32 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { GitBranch } from 'lucide-vue-next'
+import { Copy, Download, GitBranch, Play, Trash2 } from 'lucide-vue-next'
 import ProviderIcon from './ProviderIcon.vue'
 import type { Session } from '../types'
-import { activeKey, searchHits, selected, selecting, toggleSelected, toggleSession } from '../store'
+import { activeKey, continueSession, copyCommand, exportSession, mutationBusy, prepareDelete, previewing, searchHits, selected, selecting, snapshot, toggleSelected, toggleSession } from '../store'
+import { openContextMenu, type MenuItem } from '../contextMenu'
 import { shortDate, size } from '../format'
 
 const props = defineProps<{ session: Session }>()
 const active = computed(() => activeKey.value === props.session.key)
 const excerpt = computed(() => searchHits.value.get(props.session.key))
+
+function menu(event: MouseEvent) {
+  const session = props.session
+  const items: MenuItem[] = [
+    { label: snapshot.value.can_resume ? '继续会话' : '复制命令', icon: snapshot.value.can_resume ? Play : Copy, action: () => continueSession(session) },
+  ]
+  if (snapshot.value.can_resume) items.push({ label: '复制命令', icon: Copy, action: () => copyCommand(session) })
+  items.push(
+    { label: '导出', icon: Download, action: () => exportSession(session) },
+    { label: '移入回收站', icon: Trash2, danger: true, separated: true, disabled: previewing.value || mutationBusy.value, action: () => prepareDelete([session.key]) },
+  )
+  openContextMenu(event, `会话：${session.title}`, items)
+}
 </script>
 
 <template>
-  <article class="session-item" :class="{ active, checked: selected.has(session.key) }" :data-key="session.key">
+  <article class="session-item" :class="{ active, checked: selected.has(session.key) }" :data-key="session.key" @contextmenu="menu">
     <input v-if="selecting" type="checkbox" :aria-label="`选择会话：${session.title}`" :checked="selected.has(session.key)" @change="toggleSelected([session.key])" />
     <ProviderIcon :provider="session.provider" />
     <button class="session-title-button" :aria-label="`${active ? '收起' : '展开'}会话：${session.title}`" :aria-expanded="active" @click="toggleSession(session)">

@@ -80,6 +80,7 @@ input[type='checkbox'] { width: 15px; height: 15px; margin: 0; flex-shrink: 0; a
   font-size: var(--text-2xs); font-weight: var(--weight-medium); line-height: 1; white-space: nowrap; letter-spacing: 0;
 }
 .environment-badge.wsl { background: var(--color-wsl-soft); color: var(--color-wsl); }
+.environment-badge.windows { background: var(--color-windows-soft); color: var(--color-windows); }
 .badge.accent { background: var(--color-accent-soft); color: var(--color-accent-text); }
 .badge.warning, .demo-badge { background: var(--color-warning-soft); color: var(--color-warning-text); }
 .demo-badge { display: inline-flex; align-items: center; height: 20px; padding: 0 var(--space-2); border-radius: var(--radius-full); font-size: var(--text-2xs); font-weight: var(--weight-medium); letter-spacing: 0; }

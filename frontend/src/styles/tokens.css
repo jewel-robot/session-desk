@@ -77,8 +77,10 @@
   --color-danger: #e5484d;
   --color-danger-hover: #d93a40;
   --color-danger-soft: rgba(229, 72, 77, .1);
-  --color-wsl: #c2410c;
-  --color-wsl-soft: rgba(249, 115, 22, .1);
+  --color-wsl: #047857;
+  --color-wsl-soft: rgba(16, 185, 129, .12);
+  --color-windows: #1d4ed8;
+  --color-windows-soft: rgba(59, 130, 246, .12);
   --color-highlight: rgba(245, 158, 11, .16);
   --color-backdrop: rgba(15, 15, 20, .45);
   --color-toast: #18181d;
@@ -123,8 +125,10 @@
   --color-danger: #f2555a;
   --color-danger-hover: #ff6369;
   --color-danger-soft: rgba(242, 85, 90, .14);
-  --color-wsl: #fdba74;
-  --color-wsl-soft: rgba(251, 146, 60, .14);
+  --color-wsl: #6ee7b7;
+  --color-wsl-soft: rgba(52, 211, 153, .14);
+  --color-windows: #93c5fd;
+  --color-windows-soft: rgba(96, 165, 250, .14);
   --color-highlight: rgba(251, 191, 36, .14);
   --color-backdrop: rgba(0, 0, 0, .6);
   --color-toast: #ededf0;

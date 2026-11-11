@@ -134,3 +134,51 @@ test('restore reports partial failure and retains conflicting records', async ({
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
   }
 })
+
+test('right-click moves a session to the recycle bin without opening it', async ({ page }) => {
+  const title = '为会话列表添加项目分组与环境筛选'
+  const row = page.locator('.session-item').filter({ hasText: title })
+  await row.click({ button: 'right' })
+  const menu = page.getByRole('menu')
+  await expect(menu).toBeVisible()
+  const resume: boolean = await page.evaluate(async () => (await (await fetch('/api/state')).json()).can_resume)
+  await expect(menu.getByRole('menuitem')).toHaveText(resume ? ['继续会话', '复制命令', '导出', '移入回收站'] : ['复制命令', '导出', '移入回收站'])
+  await expect(page.locator('.session-item.active')).toHaveCount(0)
+  await expect(row.locator('.session-title-button')).toHaveAttribute('aria-expanded', 'false')
+  await page.keyboard.press('Escape')
+  await expect(menu).toBeHidden()
+  await row.click({ button: 'right' })
+  await page.mouse.click(5, 5)
+  await expect(menu).toBeHidden()
+
+  await row.click({ button: 'right' })
+  await page.keyboard.press('ArrowUp')
+  await expect(menu.getByRole('menuitem', { name: '移入回收站' })).toBeFocused()
+  await page.keyboard.press('Enter')
+  const dialog = page.getByRole('dialog')
+  await expect(dialog.getByRole('heading')).toHaveText('移入回收站')
+  await dialog.getByRole('button', { name: '移入回收站', exact: true }).click()
+  await expect(page.locator('.session-item')).toHaveCount(15)
+  await expect(page.locator('.session-item.active')).toHaveCount(0)
+
+  await page.locator('.nav-item').filter({ hasText: '回收站' }).click()
+  await page.locator('.trash-row').filter({ hasText: title }).click({ button: 'right' })
+  await expect(menu.getByRole('menuitem')).toHaveText(['恢复', '彻底删除'])
+  await menu.getByRole('menuitem', { name: '恢复' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: '恢复会话', exact: true }).click()
+  await expect(page.getByRole('heading', { name: '回收站为空' })).toBeVisible()
+})
+
+test('context menu stays inside the viewport and closes on scroll', async ({ page }) => {
+  await page.locator('.session-item').first().evaluate(element => {
+    element.dispatchEvent(new MouseEvent('contextmenu', { bubbles: true, cancelable: true, clientX: window.innerWidth - 2, clientY: window.innerHeight - 2 }))
+  })
+  const menu = page.getByRole('menu')
+  await expect(menu).toBeVisible()
+  const box = (await menu.boundingBox())!
+  const viewport = page.viewportSize()!
+  expect(box.x + box.width).toBeLessThanOrEqual(viewport.width)
+  expect(box.y + box.height).toBeLessThanOrEqual(viewport.height)
+  await page.locator('.page-content').evaluate(element => { element.scrollTop = 200; element.dispatchEvent(new Event('scroll')) })
+  await expect(menu).toBeHidden()
+})
