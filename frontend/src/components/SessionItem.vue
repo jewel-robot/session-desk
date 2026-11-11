@@ -5,7 +5,7 @@ import ProviderIcon from './ProviderIcon.vue'
 import type { Session } from '../types'
 import { activeKey, continueSession, copyCommand, exportSession, mutationBusy, pickSelected, prepareDelete, previewing, renderedKeys, searchHits, selected, selecting, snapshot, toggleSession } from '../store'
 import { openContextMenu, type MenuItem } from '../contextMenu'
-import { shortDate, size } from '../format'
+import { shortDate } from '../format'
 
 const props = defineProps<{ session: Session }>()
 const active = computed(() => activeKey.value === props.session.key)
@@ -39,9 +39,7 @@ function menu(event: MouseEvent) {
     <button class="session-title-button" :aria-label="`${active ? '收起' : '展开'}会话：${session.title}`" :aria-expanded="active" @click="toggleSession(session)">
       <span class="session-title-line"><span class="session-title">{{ session.title }}</span><span class="session-date">{{ shortDate(session.updated_at) }}</span></span>
       <span class="session-meta">
-        <span v-if="session.model" class="model-name">{{ session.model }}</span>
         <span>{{ session.messages }} 条消息</span>
-        <span class="session-size">{{ size(session.size) }}</span>
         <span v-if="session.branch" class="branch"><GitBranch :size="11" />{{ session.branch }}</span>
         <span v-if="session.parent_id" class="badge accent">分支会话</span>
         <span v-if="session.archived" class="badge">已归档</span>
@@ -72,7 +70,6 @@ function menu(event: MouseEvent) {
 .session-date { flex: none; color: var(--color-text-tertiary); font-size: var(--text-2xs); font-variant-numeric: tabular-nums; }
 .session-meta { display: flex; align-items: center; gap: var(--space-1-5); max-width: 100%; overflow: hidden; white-space: nowrap; color: var(--color-text-tertiary); font-size: var(--text-2xs); line-height: 18px; }
 .session-meta > span:not(.badge) + span:not(.badge)::before { content: '·'; margin-right: var(--space-1-5); color: var(--color-border-strong); }
-.session-meta .model-name { font-family: var(--font-mono); color: var(--color-text-secondary); }
 .session-meta .branch { display: inline-flex; align-items: center; gap: 3px; }
 .search-excerpt {
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-top: 2px;

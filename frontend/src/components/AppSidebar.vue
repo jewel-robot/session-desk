@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Info, Layers3, Monitor, Moon, Settings2, Sparkles, Sun, Terminal, Trash2, Plus } from '@lucide/vue'
+import { Info, Layers3, Monitor, Moon, Sparkles, Sun, Terminal, Trash2, Plus } from '@lucide/vue'
 import ProviderIcon from './ProviderIcon.vue'
 import { agents } from '../agents'
 import { counts, dialogs, goSessions, goTrash, openSources, provider, snapshot, sourceCounts, sourceID, sourceLabel, theme, trash, view } from '../store'
@@ -34,7 +34,6 @@ function pickSource(id: string) { sourceID.value = id }
     </div>
 
     <div class="sidebar-bottom">
-      <button class="nav-item" title="数据源" @click="openSources"><Settings2 :size="16" /><span>数据源</span><span class="nav-trailing">{{ snapshot.sources.length }}</span></button>
       <button v-if="updateAvailable" class="update-pill" :title="`新版本 v${update?.latest} 可用`" @click="dialogs.about = true"><Sparkles :size="14" /><span>新版本 v{{ update?.latest }}</span></button>
       <div class="sidebar-footer"><button class="version-button" :title="`关于 Session Desk${versionLabel ? ' ' + versionLabel : ''}（F1）`" aria-label="关于 Session Desk" @click="dialogs.about = true"><Info :size="14" /><code>{{ versionLabel || '关于' }}</code><span v-if="updateAvailable" class="update-dot" aria-label="有可用更新"></span></button><button class="icon-button small" :aria-label="theme === 'dark' ? '切换浅色主题' : '切换深色主题'" :title="theme === 'dark' ? '切换浅色主题' : '切换深色主题'" @click="theme = theme === 'dark' ? 'light' : 'dark'"><Moon v-if="theme === 'dark'" :size="15" /><Sun v-else :size="15" /></button></div>
     </div>
@@ -60,7 +59,7 @@ function pickSource(id: string) { sourceID.value = id }
 .nav-item:hover, .filter-item:hover, .source-item:hover { background: var(--color-hover); color: var(--color-text); }
 .nav-item.active, .filter-item.active, .source-item.selected { background: var(--color-panel); color: var(--color-text); font-weight: var(--weight-medium); box-shadow: var(--shadow-sm); }
 .nav-item > span, .filter-label { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.nav-item em, .filter-item em, .source-item small, .nav-trailing { flex: none; color: var(--color-text-tertiary); font-size: var(--text-2xs); font-variant-numeric: tabular-nums; font-weight: var(--weight-normal); }
+.nav-item em, .filter-item em, .source-item small { flex: none; color: var(--color-text-tertiary); font-size: var(--text-2xs); font-variant-numeric: tabular-nums; font-weight: var(--weight-normal); }
 .filter-icon { display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; color: var(--color-text-tertiary); }
 .filter-icon.wsl { color: var(--color-wsl); }
 .filter-icon.windows { color: var(--color-windows); }
