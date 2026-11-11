@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Check version
+        run: |
+          $version = (Get-Content -Raw VERSION).Trim()
+          if ("v$version" -ne $env:GITHUB_REF_NAME) { throw "VERSION $version does not match tag $env:GITHUB_REF_NAME" }
+      - name: Install NSIS
+        run: choco install nsis --no-progress -y
+      - name: Build
+        run: .\scripts\release.ps1 -Makensis "${env:ProgramFiles(x86)}\NSIS\makensis.exe"
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = $env:GITHUB_REF_NAME.TrimStart('v')
+          $dir = "bin/release/v$version"
+          gh release create $env:GITHUB_REF_NAME --title "Session Desk $env:GITHUB_REF_NAME" --notes-file "$dir/RELEASE_NOTES.md" `
+            "$dir/session-desk-$version-setup.exe" "$dir/session-desk-windows-amd64-v$version.zip"
